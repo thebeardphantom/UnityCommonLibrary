@@ -1,0 +1,17 @@
+{
+    "name": "UnityCommonLibrary.Editor",
+    "references": [
+        "GUID:be2dec62855e20043aafc6e0ea552e7e"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}
