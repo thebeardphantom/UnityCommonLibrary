@@ -1,7 +1,7 @@
 {
   "name": "com.beardphantom.unitycommonlibrary",
   "displayName": "UnityCommonLibrary",
-  "version": "3.0.1",
+  "version": "1.0.0",
   "unity": "2019.1",
   "description": "",
   "keywords": [
@@ -13,7 +13,6 @@
   "src": "Assets/"
   "repository": {
     "type": "git",
-    "url": "https://github.com/thebeardphantom/UnityCommonLibrary.git",
-    "revision": "5f4572ffddabe21c230e3bfc891bf38e74986ef4"
+    "url": "https://github.com/thebeardphantom/UnityCommonLibrary.git"
   }
 }
