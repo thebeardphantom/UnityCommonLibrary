@@ -10,7 +10,7 @@
   ],
   "category": "Miscellaneous",
   "dependencies": { "com.unity.ugui": "1.0.0" },
-  "src": "Assets/"
+  "src": "Assets/",
   "repository": {
     "type": "git",
     "url": "https://github.com/thebeardphantom/UnityCommonLibrary.git"
