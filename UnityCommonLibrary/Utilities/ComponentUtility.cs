@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using BeardPhantom.UCL.Pooling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,6 +10,24 @@ namespace BeardPhantom.UCL.Utility
     public static class ComponentUtility
     {
         #region Methods
+
+        public static void AutoHookupReferences(Component cmp)
+        {
+#if UNITY_EDITOR
+            var cmpType = cmp.GetType();
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            var allFields = cmpType.GetFields(bindingFlags);
+            foreach (var field in allFields)
+            {
+                var value = field.GetValue(cmp);
+                if (typeof(Component).IsAssignableFrom(field.FieldType) && value == null)
+                {
+                    value = cmp.gameObject.GetComponent(field.FieldType);
+                    field.SetValue(cmp, value);
+                }
+            }
+#endif
+        }
 
         public static T Create<T>() where T : Component
         {
