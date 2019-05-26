@@ -20,7 +20,9 @@ namespace BeardPhantom.UCL.Utility
             foreach (var field in allFields)
             {
                 var value = field.GetValue(cmp);
-                if (typeof(Component).IsAssignableFrom(field.FieldType) && value == null)
+                var isComponent = typeof(Component).IsAssignableFrom(field.FieldType);
+                var isTransform = typeof(Transform).IsAssignableFrom(field.FieldType);
+                if (isComponent && !isTransform && value == null)
                 {
                     value = cmp.gameObject.GetComponent(field.FieldType);
                     field.SetValue(cmp, value);
