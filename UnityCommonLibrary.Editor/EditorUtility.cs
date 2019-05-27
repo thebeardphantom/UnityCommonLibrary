@@ -46,47 +46,98 @@ namespace BeardPhantom.UCL.Editor
         }
 
         [MenuItem("Assets/Find All References")]
-        public static void GetReferences(MenuCommand cmd)
+        public static void GetReferences()
         {
-            var refs = GetReferences(cmd.context);
+            var refs = GetReferences(Selection.activeObject);
             var str = string.Join("\n", refs);
             Debug.Log(str);
         }
 
+        [MenuItem("Assets/Safe Delete")]
+        public static void SafeDeleteAsset()
+        {
+            var asset = Selection.activeObject;
+            var path = AssetDatabase.GetAssetPath(asset);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            var refs = GetReferences(AssetDatabase.AssetPathToGUID(path));
+            if (refs.Length == 0)
+            {
+                UnityEditor.EditorUtility.DisplayDialog(
+                    "Safe Delete",
+                    "No references found, delete?",
+                    "Delete",
+                    "Cancel");
+            }
+        }
+
         public static string[] GetReferences(Object asset)
         {
+            if (asset == null)
+            {
+                return new string[0];
+            }
+
             var path = AssetDatabase.GetAssetPath(asset);
             var guid = AssetDatabase.AssetPathToGUID(path);
             return GetReferences(guid);
         }
 
-        public static string[] GetReferences(string guid)
+        public static string[] GetReferences(string searchGuid)
         {
+            if (string.IsNullOrWhiteSpace(searchGuid))
+            {
+                return new string[0];
+            }
+
             try
             {
-                var types = new[]
+                var contentSearchableExts = new[]
                 {
-                    "t:Prefab",
-                    "t:ScriptableObject",
-                    "t:Material"
+                    ".unity",
+                    ".prefab",
+                    ".mat",
+                    ".asset"
                 };
-                var filter = string.Join(" ", types);
-                var allAssetGuids = AssetDatabase.FindAssets(filter);
-                var allAssetPaths = allAssetGuids
-                    .Select(AssetDatabase.GUIDToAssetPath)
-                    .ToArray();
-                var path = Application.dataPath;
-                path = path.Substring(0, path.Length - 6);
-                var assets = new ConcurrentBag<string>();
+
+                var searchPath = AssetDatabase.GUIDToAssetPath(searchGuid);
+                var allAssetPaths = AssetDatabase
+                    .GetAllAssetPaths()
+                    .Except(new[] { searchPath });
+
+                var projectPath = Application.dataPath;
+                projectPath = projectPath.Substring(0, projectPath.Length - 6);
+
+                var referencers = new ConcurrentBag<string>();
                 var result = Parallel.ForEach(
                     allAssetPaths,
                     assetPath =>
                     {
-                        var fullPath = path + assetPath;
-                        var text = File.ReadAllText(fullPath);
-                        if (text.Contains(guid))
+                        var didAdd = false;
+                        var fullPath = projectPath + assetPath;
+                        var metaPath = fullPath + ".meta";
+                        var assetExt = Path.GetExtension(fullPath);
+                        if (contentSearchableExts.Contains(assetExt))
                         {
-                            assets.Add(assetPath);
+                            var assetContents = File.ReadAllText(fullPath);
+                            if (assetContents.Contains(searchGuid))
+                            {
+                                referencers.Add(assetPath);
+                                didAdd = true;
+                            }
+                        }
+
+                        if (!didAdd && File.Exists(metaPath))
+                        {
+                            var metaContents = File.ReadAllText(metaPath);
+                            if (metaContents.Contains(searchGuid))
+                            {
+                                referencers.Add(assetPath);
+                                didAdd = true;
+                            }
                         }
                     });
 
@@ -98,7 +149,7 @@ namespace BeardPhantom.UCL.Editor
                         0f);
                 }
 
-                return assets.ToArray();
+                return referencers.ToArray();
             }
             finally
             {
