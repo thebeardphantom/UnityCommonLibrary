@@ -45,7 +45,7 @@ namespace BeardPhantom.UCL.Editor
                 .ToArray();
         }
 
-        [MenuItem("CONTEXT/GameObject/Delete Missing Scripts Recursively")]
+        [MenuItem("GameObject/Delete Missing Scripts Recursively")]
         public static void DeleteMissingScriptsRecursive(MenuCommand cmd)
         {
             var obj = (GameObject) cmd.context;
