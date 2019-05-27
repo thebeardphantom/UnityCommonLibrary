@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace BeardPhantom.UCL.Utility
 {
@@ -71,6 +74,31 @@ namespace BeardPhantom.UCL.Utility
         public static float Range(Vector2 range)
         {
             return Random.Range(range.x, range.y);
+        }
+
+        public static T SelectRandomWeighted<T>(IEnumerable<T> collection, Func<T, float> getWeight)
+        {
+            var totalWeight = 0f;
+            var minWeight = float.MaxValue;
+            foreach (var value in collection)
+            {
+                var weight = getWeight(value);
+                totalWeight += weight;
+                minWeight = Mathf.Min(weight, minWeight);
+            }
+
+            var rng = Random.Range(minWeight, totalWeight);
+
+            foreach (var value in collection)
+            {
+                rng -= getWeight(value);
+                if (rng < 0f)
+                {
+                    return value;
+                }
+            }
+
+            return default;
         }
 
         #endregion
