@@ -45,11 +45,39 @@ namespace BeardPhantom.UCL.Editor
                 .ToArray();
         }
 
+        [MenuItem("CONTEXT/GameObject/Delete Missing Scripts Recursively")]
+        public static void DeleteMissingScriptsRecursive(MenuCommand cmd)
+        {
+            var obj = (GameObject) cmd.context;
+            if (obj != null)
+            {
+                var count = DeleteMissingScriptsRecursive(obj);
+                UnityEditor.EditorUtility.DisplayDialog(
+                    "Recursive Missing Script Deletion",
+                    $"Deleted {count} missing scripts.",
+                    "OK");
+            }
+        }
+
+        public static int DeleteMissingScriptsRecursive(GameObject root)
+        {
+            var sum = 0;
+            var transform = root.transform;
+            for (var i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                sum += DeleteMissingScriptsRecursive(child.gameObject);
+            }
+
+            sum += GameObjectUtility.RemoveMonoBehavioursWithMissingScript(root);
+            return sum;
+        }
+
         [MenuItem("Assets/Find All References")]
         public static void GetReferences()
         {
             var refs = GetReferences(Selection.activeObject);
-            if(refs.Length > 0)
+            if (refs.Length > 0)
             {
                 var str = string.Join("\n", refs);
                 Debug.Log(str);
@@ -118,7 +146,11 @@ namespace BeardPhantom.UCL.Editor
                 var searchPath = AssetDatabase.GUIDToAssetPath(searchGuid);
                 var allAssetPaths = AssetDatabase
                     .GetAllAssetPaths()
-                    .Except(new[] { searchPath });
+                    .Except(
+                        new[]
+                        {
+                            searchPath
+                        });
 
                 var projectPath = Application.dataPath;
                 projectPath = projectPath.Substring(0, projectPath.Length - 6);
