@@ -49,8 +49,11 @@ namespace BeardPhantom.UCL.Editor
         public static void GetReferences()
         {
             var refs = GetReferences(Selection.activeObject);
-            var str = string.Join("\n", refs);
-            Debug.Log(str);
+            if(refs.Length > 0)
+            {
+                var str = string.Join("\n", refs);
+                Debug.Log(str);
+            }
         }
 
         [MenuItem("Assets/Safe Delete")]
@@ -66,11 +69,20 @@ namespace BeardPhantom.UCL.Editor
             var refs = GetReferences(AssetDatabase.AssetPathToGUID(path));
             if (refs.Length == 0)
             {
-                UnityEditor.EditorUtility.DisplayDialog(
+                var wantsDelete = UnityEditor.EditorUtility.DisplayDialog(
                     "Safe Delete",
                     "No references found, delete?",
                     "Delete",
                     "Cancel");
+                if (wantsDelete)
+                {
+                    AssetDatabase.DeleteAsset(path);
+                }
+            }
+            else
+            {
+                var str = string.Join("\n", refs);
+                Debug.Log(str);
             }
         }
 
