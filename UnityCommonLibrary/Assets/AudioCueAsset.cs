@@ -1,5 +1,7 @@
-﻿using BeardPhantom.UCL.Attributes;
+﻿using System;
+using BeardPhantom.UCL.Attributes;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace BeardPhantom.UCL.Assets
 {
@@ -9,13 +11,29 @@ namespace BeardPhantom.UCL.Assets
     [CustomAssetCreateMenu]
     public class AudioCueAsset : ScriptableObject
     {
+        #region Types
+
+        [Serializable]
+        public class AudioData
+        {
+            #region Fields
+
+            public AudioClip Clip;
+
+            public float VolumeOffset;
+
+            #endregion
+        }
+
+        #endregion
+
         #region Fields
 
         [SerializeField]
         private AudioSourceSettings _settings;
 
         [SerializeField]
-        private AudioClip[] _audio;
+        private AudioData[] _audio;
 
         #endregion
 
@@ -27,8 +45,10 @@ namespace BeardPhantom.UCL.Assets
         public AudioClip Play(AudioSource source, bool loop = false)
         {
             _settings.ApplyTo(source);
+            var clip = _audio[Random.Range(0, _audio.Length)];
+            source.volume += clip.VolumeOffset;
             source.loop = loop;
-            source.clip = _audio[Random.Range(0, _audio.Length)];
+            source.clip = clip.Clip;
             source.Play();
             return source.clip;
         }
