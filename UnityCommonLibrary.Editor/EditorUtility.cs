@@ -49,14 +49,16 @@ namespace BeardPhantom.UCL.Editor
         [MenuItem("GameObject/Delete Missing Scripts Recursively")]
         public static void DeleteMissingScriptsRecursive()
         {
-            var obj = Selection.activeGameObject;
-            if (obj != null)
+            foreach(var obj in Selection.gameObjects)
             {
-                var count = DeleteMissingScriptsRecursive(obj);
-                UnityEditor.EditorUtility.DisplayDialog(
-                    "Recursive Missing Script Deletion",
-                    $"Deleted {count} missing scripts.",
-                    "OK");
+                if (obj != null)
+                {
+                    var count = DeleteMissingScriptsRecursive(obj);
+                    UnityEditor.EditorUtility.DisplayDialog(
+                        "Recursive Missing Script Deletion",
+                        $"Deleted {count} missing scripts on {obj.name}.",
+                        "OK");
+                }
             }
         }
 
