@@ -18,10 +18,12 @@ namespace BeardPhantom.UCL.Editor
             propIter.NextVisible(true);
             do
             {
-                var scriptField = new PropertyField(propIter);
-                var shouldInclude = Array.IndexOf(ignoredProperties, propIter.name) < 0;
-                scriptField.SetEnabled(shouldInclude);
-                parent.Add(scriptField);
+                if (Array.IndexOf(ignoredProperties, propIter.name) >= 0)
+                {
+                    continue;
+                }
+
+                parent.Add(new PropertyField(propIter));
             }
             while (propIter.NextVisible(false));
         }
