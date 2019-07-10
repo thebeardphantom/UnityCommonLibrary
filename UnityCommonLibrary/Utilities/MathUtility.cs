@@ -1,64 +1,185 @@
-﻿using System;
-using UnityEngine;
+﻿using Unity.Mathematics;
 
 namespace BeardPhantom.UCL.Utility
 {
     public static class MathUtility
     {
+        #region Properties
+
+        public static float3 Half3 => new float3(0.5f, 0.5f, 0.5f);
+
+        public static float2 Half2 => new float2(0.5f, 0.5f);
+
+        #endregion
+
         #region Methods
 
         /// <summary>
-        /// Checks if a and b have the same sign.
+        /// Calculates a spring constraint
         /// </summary>
-        public static bool SameSign(float a, float b)
+        public static float Spring(
+            float value,
+            float targetValue,
+            float springSpeed,
+            float springDampening,
+            ref float velocity)
         {
-            return Math.Sign(a) == Math.Sign(b);
+            return Spring(
+                value,
+                targetValue,
+                springSpeed,
+                springDampening,
+                ref velocity,
+                UnityEngine.Time.deltaTime);
         }
 
         /// <summary>
-        /// Whether a is approximately equal to b
+        /// Calculates a spring constraint
         /// </summary>
-        public static bool Approximately(double a, double b)
+        public static float Spring(
+            float value,
+            float targetValue,
+            float springSpeed,
+            float springDampening,
+            ref float velocity,
+            float deltaTime)
         {
-            return Math.Abs(b - a) >= double.Epsilon;
+            velocity = math.lerp(
+                velocity,
+                (targetValue - value) * springDampening,
+                springSpeed * deltaTime);
+            return value + velocity;
         }
 
         /// <summary>
-        /// Wraps value between begin (inclusive) and end (exclusive)
+        /// Calculates a spring constraint
         /// </summary>
-        public static float Wrap(float value, float begin, float end)
+        public static float2 Spring(
+            float2 value,
+            float2 targetValue,
+            float2 springSpeed,
+            float2 springDampening,
+            ref float2 velocity)
         {
-            return Wrap(value - begin, end - begin) + begin;
+            return Spring(
+                value,
+                targetValue,
+                springSpeed,
+                springDampening,
+                ref velocity,
+                UnityEngine.Time.deltaTime);
         }
 
         /// <summary>
-        /// Wraps value between 0 (inclusive) and length (exclusive)
+        /// Calculates a spring constraint
         /// </summary>
-        public static float Wrap(float value, float length)
+        public static float2 Spring(
+            float2 value,
+            float2 targetValue,
+            float2 springSpeed,
+            float2 springDampening,
+            ref float2 velocity,
+            float2 deltaTime)
         {
-            var mod = Mathf.Repeat(value, length);
-            return mod < 0f
-                ? length + value
-                : mod;
+            velocity = math.lerp(
+                velocity,
+                (targetValue - value) * springDampening,
+                springSpeed * deltaTime);
+            return value + velocity;
         }
 
         /// <summary>
-        /// Wraps value between begin (inclusive) and end (exclusive)
+        /// Calculates a spring constraint
         /// </summary>
-        public static int Wrap(int value, int begin, int end)
+        public static float3 Spring(
+            float3 value,
+            float3 targetValue,
+            float3 springSpeed,
+            float3 springDampening,
+            ref float3 velocity)
         {
-            return Wrap(value, end - begin) + begin;
+            return Spring(
+                value,
+                targetValue,
+                springSpeed,
+                springDampening,
+                ref velocity,
+                UnityEngine.Time.deltaTime);
         }
 
         /// <summary>
-        /// Wraps value between 0 (inclusive) and length (exclusive)
+        /// Calculates a spring constraint
         /// </summary>
-        public static int Wrap(int value, int length)
+        public static float3 Spring(
+            float3 value,
+            float3 targetValue,
+            float3 springSpeed,
+            float3 springDampening,
+            ref float3 velocity,
+            float3 deltaTime)
         {
-            var mod = value % length;
-            return mod < 0f
-                ? length + value
-                : mod;
+            velocity = math.lerp(
+                velocity,
+                (targetValue - value) * springDampening,
+                springSpeed * deltaTime);
+            return value + velocity;
+        }
+
+        /// <summary>
+        /// Calculates a spring constraint
+        /// </summary>
+        public static float4 Spring(
+            float4 value,
+            float4 targetValue,
+            float4 springSpeed,
+            float4 springDampening,
+            ref float4 velocity)
+        {
+            return Spring(
+                value,
+                targetValue,
+                springSpeed,
+                springDampening,
+                ref velocity,
+                UnityEngine.Time.deltaTime);
+        }
+
+        /// <summary>
+        /// Calculates a spring constraint
+        /// </summary>
+        public static float4 Spring(
+            float4 value,
+            float4 targetValue,
+            float4 springSpeed,
+            float4 springDampening,
+            ref float4 velocity,
+            float4 deltaTime)
+        {
+            velocity = math.lerp(
+                velocity,
+                (targetValue - value) * springDampening,
+                springSpeed * deltaTime);
+            return value + velocity;
+        }
+
+        public static float RoundTo(float vec, float nearest)
+        {
+            return math.round(vec * nearest) / nearest;
+        }
+
+        public static float2 RoundTo(float2 vec, float nearest)
+        {
+            return math.round(vec * nearest) / nearest;
+        }
+
+        public static float3 RoundTo(float3 vec, float nearest)
+        {
+            return math.round(vec * nearest) / nearest;
+        }
+
+        public static float4 RoundTo(float4 vec, float nearest)
+        {
+            return math.round(vec * nearest) / nearest;
         }
 
         /// <summary>
@@ -81,23 +202,6 @@ namespace BeardPhantom.UCL.Utility
             return f;
         }
 
-        public static float SignOrZero(float f)
-        {
-            return Mathf.Approximately(0f, f)
-                ? 0f
-                : Mathf.Sign(f);
-        }
-
-        public static float RoundTo(float f, float nearest)
-        {
-            var multiple = 1f / nearest;
-
-            return (float) Math.Round(
-                    f * multiple,
-                    MidpointRounding.AwayFromZero)
-                / multiple;
-        }
-
         public static float Map(
             float value,
             float oldMin,
@@ -108,280 +212,34 @@ namespace BeardPhantom.UCL.Utility
             return (value - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
         }
 
-        #endregion
-
-        #region Min
-
-        public static byte Min(params byte[] values)
+        public static float2 Map(
+            float2 value,
+            float2 oldMin,
+            float2 oldMax,
+            float2 newMin,
+            float2 newMax)
         {
-            var min = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                min = values[i] < min
-                    ? values[i]
-                    : min;
-            }
-
-            return min;
+            return (value - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
         }
 
-        public static sbyte Min(params sbyte[] values)
+        public static float3 Map(
+            float3 value,
+            float3 oldMin,
+            float3 oldMax,
+            float3 newMin,
+            float3 newMax)
         {
-            var min = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                min = values[i] < min
-                    ? values[i]
-                    : min;
-            }
-
-            return min;
+            return (value - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
         }
 
-        public static uint Min(params uint[] values)
+        public static float4 Map(
+            float4 value,
+            float4 oldMin,
+            float4 oldMax,
+            float4 newMin,
+            float4 newMax)
         {
-            var min = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                min = values[i] < min
-                    ? values[i]
-                    : min;
-            }
-
-            return min;
-        }
-
-        public static ushort Min(params ushort[] values)
-        {
-            var min = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                min = values[i] < min
-                    ? values[i]
-                    : min;
-            }
-
-            return min;
-        }
-
-        public static short Min(params short[] values)
-        {
-            var min = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                min = values[i] < min
-                    ? values[i]
-                    : min;
-            }
-
-            return min;
-        }
-
-        #endregion
-
-        #region Max
-
-        public static byte Max(params byte[] values)
-        {
-            var max = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                max = values[i] > max
-                    ? values[i]
-                    : max;
-            }
-
-            return max;
-        }
-
-        public static sbyte Max(params sbyte[] values)
-        {
-            var max = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                max = values[i] > max
-                    ? values[i]
-                    : max;
-            }
-
-            return max;
-        }
-
-        public static uint Max(params uint[] values)
-        {
-            var max = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                max = values[i] > max
-                    ? values[i]
-                    : max;
-            }
-
-            return max;
-        }
-
-        public static ushort Max(params ushort[] values)
-        {
-            var max = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                max = values[i] > max
-                    ? values[i]
-                    : max;
-            }
-
-            return max;
-        }
-
-        public static short Max(params short[] values)
-        {
-            var max = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                max = values[i] > max
-                    ? values[i]
-                    : max;
-            }
-
-            return max;
-        }
-
-        public static long Max(params long[] values)
-        {
-            var max = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                max = values[i] > max
-                    ? values[i]
-                    : max;
-            }
-
-            return max;
-        }
-
-        public static ulong Max(params ulong[] values)
-        {
-            var max = values[0];
-
-            for (var i = 1; i < values.Length; i++)
-            {
-                max = values[i] > max
-                    ? values[i]
-                    : max;
-            }
-
-            return max;
-        }
-
-        #endregion
-
-        #region Clamp
-
-        public static byte Clamp(byte current, byte min, byte max)
-        {
-            if (current > max)
-            {
-                return max;
-            }
-
-            return current < min
-                ? min
-                : current;
-        }
-
-        public static sbyte Clamp(sbyte current, sbyte min, sbyte max)
-        {
-            if (current > max)
-            {
-                return max;
-            }
-
-            return current < min
-                ? min
-                : current;
-        }
-
-        public static uint Clamp(uint current, uint min, uint max)
-        {
-            if (current > max)
-            {
-                return max;
-            }
-
-            return current < min
-                ? min
-                : current;
-        }
-
-        public static ushort Clamp(ushort current, ushort min, ushort max)
-        {
-            if (current > max)
-            {
-                return max;
-            }
-
-            return current < min
-                ? min
-                : current;
-        }
-
-        public static short Clamp(short current, short min, short max)
-        {
-            if (current > max)
-            {
-                return max;
-            }
-
-            return current < min
-                ? min
-                : current;
-        }
-
-        public static long Clamp(long current, long min, long max)
-        {
-            if (current > max)
-            {
-                return max;
-            }
-
-            return current < min
-                ? min
-                : current;
-        }
-
-        public static ulong Clamp(ulong current, ulong min, ulong max)
-        {
-            if (current > max)
-            {
-                return max;
-            }
-
-            return current < min
-                ? min
-                : current;
-        }
-
-        public static char Clamp(char current, char min, char max)
-        {
-            if (current > max)
-            {
-                return max;
-            }
-
-            return current < min
-                ? min
-                : current;
+            return (value - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
         }
 
         #endregion

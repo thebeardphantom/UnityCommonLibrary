@@ -16,57 +16,6 @@ namespace BeardPhantom.UCL.Utility
 
         #region Methods
 
-        public static void SetPosition(
-            this Transform transform,
-            Space space,
-            float? x = null,
-            float? y = null,
-            float? z = null)
-        {
-            var newV3 = transform.position;
-            VectorUtility.SetXyz(ref newV3, x, y, z);
-
-            if (space == Space.World)
-            {
-                transform.position = newV3;
-            }
-            else
-            {
-                transform.localPosition = newV3;
-            }
-        }
-
-        public static void SetLocalScale(
-            this Transform transform,
-            float? x = null,
-            float? y = null,
-            float? z = null)
-        {
-            var newV3 = transform.localScale;
-            VectorUtility.SetXyz(ref newV3, x, y, z);
-            transform.localScale = newV3;
-        }
-
-        public static void SetEulerAngles(
-            this Transform transform,
-            Space space,
-            float? x = null,
-            float? y = null,
-            float? z = null)
-        {
-            var newV3 = transform.eulerAngles;
-            VectorUtility.SetXyz(ref newV3, x, y, z);
-
-            if (space == Space.World)
-            {
-                transform.rotation = Quaternion.Euler(newV3);
-            }
-            else
-            {
-                transform.localRotation = Quaternion.Euler(newV3);
-            }
-        }
-
         public static void Reset(this Transform t)
         {
             Reset(t, TransformElement.All, Space.World);
