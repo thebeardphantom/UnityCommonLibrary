@@ -55,9 +55,12 @@ namespace BeardPhantom.UCL.Services
 
             foreach (var module in _modules)
             {
-                foreach (IPostServicesBound postServicesBound in module.Bindings.Values)
+                foreach (var binding in module.Bindings.Values)
                 {
-                    postServicesBound.OnServicesBound();
+                    if (binding is IPostServicesBound postServicesBound)
+                    {
+                        postServicesBound.OnServicesBound();
+                    }
                 }
             }
         }

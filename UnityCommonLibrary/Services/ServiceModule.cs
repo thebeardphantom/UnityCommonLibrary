@@ -29,9 +29,12 @@ namespace BeardPhantom.UCL
         /// <inheritdoc />
         public void Dispose()
         {
-            foreach (IDisposable binding in Bindings.Values)
+            foreach (var binding in Bindings.Values)
             {
-                binding.Dispose();
+                if (binding is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
             }
 
             Bindings.Clear();
