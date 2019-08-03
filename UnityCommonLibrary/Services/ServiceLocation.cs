@@ -24,9 +24,9 @@ namespace BeardPhantom.UCL.Services
         public static void SetKernel(ServiceKernel kernel)
         {
             _kernel?.Dispose();
+            _kernel = kernel;
             KernelGuid = Guid.NewGuid();
             kernel.BindAllModules();
-            _kernel = kernel;
         }
 
         public static T Get<T>() where T : class
