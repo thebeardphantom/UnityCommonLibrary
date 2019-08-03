@@ -20,10 +20,10 @@ namespace BeardPhantom.UCL.Services
         {
             get
             {
-                if (_value == null || ServiceLocation.Kernel.Guid != _lastRebuiltGuid)
+                if (_value == null || ServiceLocation.KernelGuid != _lastRebuiltGuid)
                 {
-                    _value = ServiceLocation.Kernel.Get<T>();
-                    _lastRebuiltGuid = ServiceLocation.Kernel.Guid;
+                    _value = ServiceLocation.Get<T>();
+                    _lastRebuiltGuid = ServiceLocation.KernelGuid;
                 }
 
                 return _value;

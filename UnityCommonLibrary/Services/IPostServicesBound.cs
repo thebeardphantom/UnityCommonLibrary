@@ -1,10 +1,10 @@
 ﻿namespace BeardPhantom.UCL.Services
 {
-    public interface IService
+    public interface IPostServicesBound
     {
         #region Methods
 
-        void OnServiceModuleBindingComplete();
+        void OnServicesBound();
 
         #endregion
     }

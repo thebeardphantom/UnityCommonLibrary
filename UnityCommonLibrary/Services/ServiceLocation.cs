@@ -1,4 +1,6 @@
-﻿namespace BeardPhantom.UCL.Services
+﻿using System;
+
+namespace BeardPhantom.UCL.Services
 {
     public static class ServiceLocation
     {
@@ -7,7 +9,30 @@
         /// <summary>
         /// Accessor for current service locator
         /// </summary>
-        public static ServiceKernel Kernel;
+        private static ServiceKernel _kernel;
+
+        #endregion
+
+        #region Properties
+
+        public static Guid KernelGuid { get; private set; }
+
+        #endregion
+
+        #region Methods
+
+        public static void SetKernel(ServiceKernel kernel)
+        {
+            _kernel?.Dispose();
+            KernelGuid = Guid.NewGuid();
+            kernel.BindAllModules();
+            _kernel = kernel;
+        }
+
+        public static T Get<T>() where T : class
+        {
+            return _kernel.Get<T>();
+        }
 
         #endregion
     }

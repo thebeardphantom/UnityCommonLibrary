@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace BeardPhantom.UCL.Services
 {
@@ -8,52 +7,15 @@ namespace BeardPhantom.UCL.Services
     {
         #region Fields
 
-        public readonly Guid Guid = Guid.NewGuid();
-
         private readonly List<ServiceModule> _modules = new List<ServiceModule>();
-
-        #endregion
-
-        #region Constructors
-
-        /// <inheritdoc />
-        ~ServiceKernel()
-        {
-            ReleaseUnmanagedResources();
-        }
 
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// Binds modules
-        /// </summary>
-        public void RegisterModules(params ServiceModule[] modules)
-        {
-            foreach (var module in modules)
-            {
-                module.BindServices();
-                _modules.Add(module);
-            }
-
-            foreach (var module in modules)
-            {
-                foreach (var binding in module.Bindings.Values.OfType<IService>())
-                {
-                    binding.OnServiceModuleBindingComplete();
-                }
-            }
-        }
-
         public void RegisterModule(ServiceModule module)
         {
-            module.BindServices();
             _modules.Add(module);
-            foreach (var binding in module.Bindings.Values.OfType<IService>())
-            {
-                binding.OnServiceModuleBindingComplete();
-            }
         }
 
         /// <summary>
@@ -76,18 +38,28 @@ namespace BeardPhantom.UCL.Services
         /// <inheritdoc />
         public void Dispose()
         {
-            ReleaseUnmanagedResources();
-            GC.SuppressFinalize(this);
-        }
-
-        private void ReleaseUnmanagedResources()
-        {
             foreach (var module in _modules)
             {
                 module.Dispose();
             }
 
             _modules.Clear();
+        }
+
+        public void BindAllModules()
+        {
+            foreach (var module in _modules)
+            {
+                module.BindServices();
+            }
+
+            foreach (var module in _modules)
+            {
+                foreach (IPostServicesBound postServicesBound in module.Bindings.Values)
+                {
+                    postServicesBound.OnServicesBound();
+                }
+            }
         }
 
         #endregion

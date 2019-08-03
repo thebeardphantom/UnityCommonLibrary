@@ -19,16 +19,6 @@ namespace BeardPhantom.UCL
 
         #endregion
 
-        #region Constructors
-
-        /// <inheritdoc />
-        ~ServiceModule()
-        {
-            ReleaseUnmanagedResources();
-        }
-
-        #endregion
-
         #region Methods
 
         /// <summary>
@@ -39,8 +29,12 @@ namespace BeardPhantom.UCL
         /// <inheritdoc />
         public void Dispose()
         {
-            ReleaseUnmanagedResources();
-            GC.SuppressFinalize(this);
+            foreach (IDisposable binding in Bindings.Values)
+            {
+                binding.Dispose();
+            }
+
+            Bindings.Clear();
         }
 
         /// <summary>
@@ -109,19 +103,6 @@ namespace BeardPhantom.UCL
             }
 
             return provider;
-        }
-
-        private void ReleaseUnmanagedResources()
-        {
-            foreach (var binding in Bindings)
-            {
-                if (binding.Value is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-            }
-
-            Bindings.Clear();
         }
 
         #endregion
