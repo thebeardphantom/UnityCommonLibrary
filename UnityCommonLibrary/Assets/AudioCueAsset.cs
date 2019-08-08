@@ -1,6 +1,7 @@
 ﻿using System;
 using BeardPhantom.UCL.Attributes;
 using UnityEngine;
+using UnityEngine.Assertions;
 using Random = UnityEngine.Random;
 
 namespace BeardPhantom.UCL.Assets
@@ -37,6 +38,12 @@ namespace BeardPhantom.UCL.Assets
 
         #endregion
 
+        #region Properties
+
+        public AudioData[] Audio => _audio;
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -44,8 +51,11 @@ namespace BeardPhantom.UCL.Assets
         /// </summary>
         public AudioClip Play(AudioSource source, bool loop = false)
         {
+            Assert.IsTrue(Audio.Length > 0, $"No assigned audio for {name}");
             _settings.ApplyTo(source);
-            var clip = _audio[Random.Range(0, _audio.Length)];
+            var selectedIndex = Random.Range(0, Audio.Length);
+            var clip = Audio[selectedIndex];
+            Assert.IsNotNull(clip.Clip, $"Audio entry {selectedIndex} for {name} has no assigned clip");
             source.volume += clip.VolumeOffset;
             source.loop = loop;
             source.clip = clip.Clip;

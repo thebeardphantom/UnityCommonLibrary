@@ -30,6 +30,10 @@ namespace BeardPhantom.UCL.Editor
 
         public static AudioSource Play(AudioCueAsset cue)
         {
+            if (cue == null)
+            {
+                return null;
+            }
             var source = GetAudioSource();
             cue.Play(source);
             return source;

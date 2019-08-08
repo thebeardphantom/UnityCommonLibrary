@@ -1,4 +1,5 @@
-﻿using BeardPhantom.UCL.Assets;
+﻿using System.Linq;
+using BeardPhantom.UCL.Assets;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,13 +20,16 @@ namespace BeardPhantom.UCL.Editor.Inspectors
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+            var cueAsset = (AudioCueAsset) target;
+            var cachedEnabled = GUI.enabled;
+            GUI.enabled = cueAsset.Audio != null && cueAsset.Audio.Any(a => a.Clip != null);
             var cachedColor = GUI.color;
             if (_lastPlayingSource == null)
             {
                 GUI.color = Color.green;
                 if (GUILayout.Button("Play"))
                 {
-                    _lastPlayingSource = EditorAudioUtility.Play((AudioCueAsset) target);
+                    _lastPlayingSource = EditorAudioUtility.Play(cueAsset);
                 }
             }
             else
@@ -38,10 +42,14 @@ namespace BeardPhantom.UCL.Editor.Inspectors
             }
 
             GUI.color = cachedColor;
+            GUI.enabled = cachedEnabled;
 
             DrawPropertiesExcluding(serializedObject, "m_Script");
             serializedObject.ApplyModifiedProperties();
-            Repaint();
+            if(_lastPlayingSource != null)
+            {
+                Repaint();
+            }
         }
 
         #endregion
