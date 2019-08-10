@@ -13,6 +13,9 @@ namespace BeardPhantom.UCL
     {
         #region Fields
 
+        [SerializeField]
+        private string _rawPath;
+
         #endregion
 
         #region Properties
@@ -20,8 +23,8 @@ namespace BeardPhantom.UCL
         /// <summary>
         /// Path provided at build time.
         /// </summary>
-        [field: SerializeField]
-        public string RawPath { get; private set; }
+
+        public string RawPath => _rawPath;
 
         #endregion
 
@@ -42,7 +45,7 @@ namespace BeardPhantom.UCL
         {
             return new SceneReference
             {
-                RawPath = scenePath
+                _rawPath = scenePath
             };
         }
 
@@ -51,7 +54,7 @@ namespace BeardPhantom.UCL
         /// </summary>
         public string GetLoadablePath()
         {
-            var extensionIndex = RawPath.LastIndexOf(".unity");
+            var extensionIndex = _rawPath.LastIndexOf(".unity");
             var prefixLength = "Assets/".Length;
             return RawPath.Substring(prefixLength, extensionIndex - prefixLength);
         }

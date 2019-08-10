@@ -9,14 +9,17 @@ namespace BeardPhantom.UCL.Assets
     [CustomAssetCreateMenu]
     public abstract class ValueAsset<T> : ValueAsset
     {
+        [SerializeField]
+        private T _value;
+
         #region Fields
 
         #endregion
 
         #region Properties
 
-        [field: SerializeField]
-        public virtual T Value { get; }
+        
+        public virtual T Value => _value;
 
         #endregion
 

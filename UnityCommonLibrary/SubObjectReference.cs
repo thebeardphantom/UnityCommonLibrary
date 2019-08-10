@@ -14,14 +14,17 @@ namespace BeardPhantom.UCL
         private static readonly Dictionary<string, SubObjectReference> _refLookup
             = new Dictionary<string, SubObjectReference>();
 
+        [ReadOnly]
+        [SerializeField]
+        [HideInInspector]
+        private string _guid;
+
         #endregion
 
         #region Properties
 
-        [field: ReadOnly]
-        [field: SerializeField]
-        [field: HideInInspector]
-        public string Guid { get; }
+        
+        public string Guid => _guid;
 
         #endregion
 
