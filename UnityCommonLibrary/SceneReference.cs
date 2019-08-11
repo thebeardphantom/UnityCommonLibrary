@@ -14,6 +14,7 @@ namespace BeardPhantom.UCL
         #region Fields
 
         [SerializeField]
+        [HideInInspector]
         private string _rawPath;
 
         #endregion
