@@ -46,9 +46,17 @@ namespace BeardPhantom.UCL.Editor.Inspectors
 
             DrawPropertiesExcluding(serializedObject, "m_Script");
             serializedObject.ApplyModifiedProperties();
-            if(_lastPlayingSource != null)
+            if (_lastPlayingSource != null)
             {
                 Repaint();
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_lastPlayingSource != null)
+            {
+                _lastPlayingSource.Stop();
             }
         }
 
