@@ -33,10 +33,27 @@ namespace BeardPhantom.UCL
                 return;
             }
 
+            var rawImage = GetComponent<RawImage>();
+            if (rawImage)
+            {
+#if UNITY_EDITOR
+                _material = Instantiate(rawImage.material);
+                rawImage.material = _material;
+#else
+                _material = rawImage.material;
+#endif
+                return;
+            }
+
             var image = GetComponent<Image>();
             if (image)
             {
+#if UNITY_EDITOR
+                _material = Instantiate(image.material);
+                image.material = _material;
+#else
                 _material = image.material;
+#endif
             }
         }
 
