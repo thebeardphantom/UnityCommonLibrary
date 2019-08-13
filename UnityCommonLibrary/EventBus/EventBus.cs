@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace BeardPhantom.UCL
 {
@@ -12,8 +11,6 @@ namespace BeardPhantom.UCL
 
         private readonly ConcurrentDictionary<Type, IListenerCollection> _listenerCollections
             = new ConcurrentDictionary<Type, IListenerCollection>();
-
-        private readonly Stack<EventBusEventData> _evtStack = new Stack<EventBusEventData>();
 
         #endregion
 
@@ -30,18 +27,11 @@ namespace BeardPhantom.UCL
             var collection = GetCollection<T>();
             if (collection != null)
             {
-                if (_evtStack.Count > 0)
-                {
-                    evtData.Source = evtData.Source ?? _evtStack.Peek();
-                }
-
-                _evtStack.Push(evtData);
                 foreach (var observer in collection)
                 {
                     observer.Publish(evtData);
                 }
 
-                _evtStack.Pop();
                 collection.RemoveWhere(observer => observer.Once);
             }
         }
@@ -59,6 +49,20 @@ namespace BeardPhantom.UCL
             }
 
             collection.Add(new EventBusObserver<T>(callback, predicate, once));
+        }
+
+        public void RemoveObserver<T>(EventPosted<T> observer)
+        {
+            var collection = GetCollection<T>();
+            collection.Remove(observer);
+        }
+
+        public void RemoveObserver(object target)
+        {
+            foreach (var collection in _listenerCollections.Values)
+            {
+                collection.RemoveTarget(target);
+            }
         }
 
         private ListenerCollection<T> GetCollection<T>()

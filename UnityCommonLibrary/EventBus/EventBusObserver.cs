@@ -40,6 +40,11 @@ namespace BeardPhantom.UCL
             return callback.Equals(_callback);
         }
 
+        public bool HasTarget(object target)
+        {
+            return _callback.Target == target;
+        }
+
         #endregion
     }
 }

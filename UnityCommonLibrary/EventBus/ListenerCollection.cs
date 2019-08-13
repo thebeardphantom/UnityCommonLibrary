@@ -5,7 +5,14 @@ using BeardPhantom.UCL.Pooling;
 
 namespace BeardPhantom.UCL
 {
-    internal interface IListenerCollection { }
+    internal interface IListenerCollection
+    {
+        #region Methods
+
+        void RemoveTarget(object target);
+
+        #endregion
+    }
 
     internal class ListenerCollection<T> : IListenerCollection, IEnumerable<EventBusObserver<T>>
     {
@@ -44,14 +51,23 @@ namespace BeardPhantom.UCL
 
         public IEnumerator<EventBusObserver<T>> GetEnumerator()
         {
-            using (var list = ListPool<EventBusObserver<T>>.Obtain())
+            lock (_observers)
             {
-                list.Collection.AddRange(_observers);
-                foreach (var observer in list.Collection)
+                using (var list = ListPool<EventBusObserver<T>>.Obtain())
                 {
-                    yield return observer;
+                    list.Collection.AddRange(_observers);
+                    foreach (var observer in list.Collection)
+                    {
+                        yield return observer;
+                    }
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public void RemoveTarget(object target)
+        {
+            RemoveWhere(o => o.HasTarget(target));
         }
 
         IEnumerator IEnumerable.GetEnumerator()
