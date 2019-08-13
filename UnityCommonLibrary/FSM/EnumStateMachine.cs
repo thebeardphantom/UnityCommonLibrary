@@ -1,41 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using BeardPhantom.UCL.Signals;
 using BeardPhantom.UCL.Time;
 
 namespace BeardPhantom.UCL.FSM
 {
-    public sealed class EnumStateMachine<T>
-        where T : struct, IFormattable, IConvertible, IComparable
+    public sealed class EnumStateMachine<T> where T : struct, IFormattable, IConvertible, IComparable
     {
         #region Types
 
-        public delegate void OnEnter(T previousState);
+        public delegate void OnEnter(T? previousState);
 
         public delegate void OnExit(T nextState);
+
+        public delegate void OnStateChanged(T? previousState, T nextState);
+
+        #endregion
+
+        #region Events
+
+        public event OnStateChanged StateChanged;
 
         #endregion
 
         #region Fields
 
-        public readonly Signal<T, T> StateChanged = new Signal<T, T>();
+        private readonly Dictionary<T, List<OnEnter>> _onStateEnter =
+            new Dictionary<T, List<OnEnter>>();
 
-        private readonly Dictionary<T, HashSet<OnEnter>> OnStateEnter =
-            new Dictionary<T, HashSet<OnEnter>>();
+        private readonly Dictionary<T, List<OnExit>> _onStateExit =
+            new Dictionary<T, List<OnExit>>();
 
-        private readonly Dictionary<T, HashSet<OnExit>> OnStateExit =
-            new Dictionary<T, HashSet<OnExit>>();
-
-        private readonly Dictionary<T, HashSet<Action>> OnStateUpdate =
-            new Dictionary<T, HashSet<Action>>();
+        private readonly Dictionary<T, List<Action>> _onStateUpdate =
+            new Dictionary<T, List<Action>>();
 
         #endregion
 
         #region Properties
 
-        public T CurrentState { get; private set; }
+        public T? CurrentState { get; private set; }
 
-        public T PreviousState { get; private set; }
+        public T? PreviousState { get; private set; }
 
         public TimeSlice StateEnterTime { get; private set; }
 
@@ -57,21 +61,27 @@ namespace BeardPhantom.UCL.FSM
 
         public void Update()
         {
-            if (OnStateUpdate.TryGetValue(CurrentState, out var callbacks))
+            if (!CurrentState.HasValue)
             {
-                foreach (var a in callbacks)
+                return;
+            }
+
+            if (_onStateUpdate.TryGetValue(CurrentState.Value, out var callbacks))
+            {
+                for (var i = callbacks.Count - 1; i >= 0; i--)
                 {
-                    a();
+                    var callback = callbacks[i];
+                    callback();
                 }
             }
         }
 
-        public void AddOnUpdate(T state, Action onUpdate)
+        public void AddOnTick(T state, Action onUpdate)
         {
-            if (!OnStateUpdate.TryGetValue(state, out var callbacks))
+            if (!_onStateUpdate.TryGetValue(state, out var callbacks))
             {
-                callbacks = new HashSet<Action>();
-                OnStateUpdate.Add(state, callbacks);
+                callbacks = new List<Action>();
+                _onStateUpdate.Add(state, callbacks);
             }
 
             callbacks.Add(onUpdate);
@@ -79,10 +89,10 @@ namespace BeardPhantom.UCL.FSM
 
         public void AddOnEnter(T state, OnEnter onEnter)
         {
-            if (!OnStateEnter.TryGetValue(state, out var callbacks))
+            if (!_onStateEnter.TryGetValue(state, out var callbacks))
             {
-                callbacks = new HashSet<OnEnter>();
-                OnStateEnter.Add(state, callbacks);
+                callbacks = new List<OnEnter>();
+                _onStateEnter.Add(state, callbacks);
             }
 
             callbacks.Add(onEnter);
@@ -90,10 +100,10 @@ namespace BeardPhantom.UCL.FSM
 
         public void AddOnExit(T state, OnExit onExit)
         {
-            if (!OnStateExit.TryGetValue(state, out var callbacks))
+            if (!_onStateExit.TryGetValue(state, out var callbacks))
             {
-                callbacks = new HashSet<OnExit>();
-                OnStateExit.Add(state, callbacks);
+                callbacks = new List<OnExit>();
+                _onStateExit.Add(state, callbacks);
             }
 
             callbacks.Add(onExit);
@@ -101,12 +111,12 @@ namespace BeardPhantom.UCL.FSM
 
         public void ChangeState(T nextState)
         {
-            if (Equals(nextState, CurrentState))
+            if (CurrentState.HasValue && Equals(nextState, CurrentState.Value))
             {
                 return;
             }
 
-            if (OnStateExit.TryGetValue(CurrentState, out var exitCallbacks))
+            if (CurrentState.HasValue && _onStateExit.TryGetValue(CurrentState.Value, out var exitCallbacks))
             {
                 foreach (var callback in exitCallbacks)
                 {
@@ -117,7 +127,7 @@ namespace BeardPhantom.UCL.FSM
             PreviousState = CurrentState;
             CurrentState = nextState;
 
-            if (OnStateEnter.TryGetValue(CurrentState, out var enterCallbacks))
+            if (_onStateEnter.TryGetValue(CurrentState.Value, out var enterCallbacks))
             {
                 foreach (var callback in enterCallbacks)
                 {
@@ -126,25 +136,43 @@ namespace BeardPhantom.UCL.FSM
             }
 
             StateEnterTime = TimeSlice.Create();
-            StateChanged.Publish(PreviousState, CurrentState);
+            StateChanged?.Invoke(PreviousState, CurrentState.Value);
         }
 
         /// <inheritdoc />
-        public void RemoveCallbacks(object obj)
+        public void RemoveCallbacks(object target)
         {
-            foreach (var list in OnStateEnter.Values)
+            foreach (var list in _onStateEnter.Values)
             {
-                list.RemoveWhere(m => m.Target == obj);
+                for (var i = list.Count - 1; i >= 0; i--)
+                {
+                    if (list[i].Target == target)
+                    {
+                        list.RemoveAt(i);
+                    }
+                }
             }
 
-            foreach (var list in OnStateExit.Values)
+            foreach (var list in _onStateExit.Values)
             {
-                list.RemoveWhere(m => m.Target == obj);
+                for (var i = list.Count - 1; i >= 0; i--)
+                {
+                    if (list[i].Target == target)
+                    {
+                        list.RemoveAt(i);
+                    }
+                }
             }
 
-            foreach (var list in OnStateUpdate.Values)
+            foreach (var list in _onStateUpdate.Values)
             {
-                list.RemoveWhere(m => m.Target == obj);
+                for (var i = list.Count - 1; i >= 0; i--)
+                {
+                    if (list[i].Target == target)
+                    {
+                        list.RemoveAt(i);
+                    }
+                }
             }
         }
 
