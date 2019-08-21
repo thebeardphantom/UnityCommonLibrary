@@ -1,17 +1,10 @@
-﻿using Unity.Mathematics;
+﻿using System;
+using Unity.Mathematics;
 
 namespace BeardPhantom.UCL.Utility
 {
     public static class MathUtility
     {
-        #region Properties
-
-        public static float3 Half3 => new float3(0.5f, 0.5f, 0.5f);
-
-        public static float2 Half2 => new float2(0.5f, 0.5f);
-
-        #endregion
-
         #region Methods
 
         /// <summary>
@@ -240,6 +233,32 @@ namespace BeardPhantom.UCL.Utility
             float4 newMax)
         {
             return (value - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
+        }
+
+        public static float Wrap(float value, float length)
+        {
+            var mod = value % length;
+            return mod < 0f
+                ? length + value
+                : mod;
+        }
+
+        public static int Wrap(int value, int length)
+        {
+            var mod = value % length;
+            return mod < 0f
+                ? length + value
+                : mod;
+        }
+
+        public static bool SameSign(int a, int b)
+        {
+            return Math.Sign(a) == Math.Sign(b);
+        }
+
+        public static bool SameSign(float a, float b)
+        {
+            return Math.Sign(a) == Math.Sign(b);
         }
 
         #endregion
