@@ -235,6 +235,16 @@ namespace BeardPhantom.UCL.Utility
             return (value - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
         }
 
+        public static float Wrap(float value, float min, float max)
+        {
+            return Wrap(value - min, max - min) + min;
+        }
+
+        public static float Wrap(int value, int min, int max)
+        {
+            return Wrap(value - min, max - min) + min;
+        }
+
         public static float Wrap(float value, float length)
         {
             var mod = value % length;
