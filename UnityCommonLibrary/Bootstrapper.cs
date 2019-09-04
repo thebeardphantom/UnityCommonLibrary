@@ -69,6 +69,7 @@ namespace UnityCommonLibrary
             if (EnsureInstance())
             {
                 StoreDesiredScenes();
+                SceneManager.LoadScene(_bootstrapSceneBuildIndex);
             }
         }
 
