@@ -1,9 +1,9 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_EDITOR
+using UnityEngine;
 
 #endif
 
@@ -66,21 +66,18 @@ namespace UnityCommonLibrary
 
         protected virtual void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (EnsureInstance())
             {
-                Destroy(gameObject);
-                return;
+                StoreDesiredScenes();
             }
-
-            Instance = this;
-            DontDestroyOnLoad(this);
-
-            StoreDesiredScenes();
         }
 
         protected virtual void Start()
         {
-            BeginBootstrapping();
+            if (EnsureInstance())
+            {
+                BeginBootstrapping();
+            }
         }
 
         protected virtual void Update()
@@ -104,9 +101,22 @@ namespace UnityCommonLibrary
 
             if (_tasks.Count == 0)
             {
-                State = BootstrapperState.WaitingOnTasks;
+                State = BootstrapperState.Complete;
                 RestoreDesiredScenes();
             }
+        }
+
+        private bool EnsureInstance()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return false;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(this);
+            return true;
         }
 
         private void StoreDesiredScenes()
