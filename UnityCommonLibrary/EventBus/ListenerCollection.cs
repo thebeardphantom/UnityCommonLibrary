@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using BeardPhantom.UCL.Pooling;
+﻿using System.Collections.Generic;
+using UnityEngine.Assertions;
 
 namespace BeardPhantom.UCL
 {
@@ -11,15 +9,17 @@ namespace BeardPhantom.UCL
 
         void RemoveTarget(object target);
 
+        void Publish(object data);
+
         #endregion
     }
 
-    internal class ListenerCollection<T> : IListenerCollection, IEnumerable<EventBusObserver<T>>
+    internal class ListenerCollection<T> : IListenerCollection where T : EventBusEventData
     {
         #region Fields
 
-        private readonly HashSet<EventBusObserver<T>> _observers =
-            new HashSet<EventBusObserver<T>>();
+        private readonly HashSet<EventBusObserverBase<T>> _observers =
+            new HashSet<EventBusObserverBase<T>>();
 
         #endregion
 
@@ -35,44 +35,31 @@ namespace BeardPhantom.UCL
 
         public void Remove(EventPosted<T> callback)
         {
-            lock (_observers)
-            {
-                _observers.RemoveWhere(observer => observer.CallbackEquals(callback));
-            }
-        }
-
-        public void RemoveWhere(Predicate<EventBusObserver<T>> match)
-        {
-            lock (_observers)
-            {
-                _observers.RemoveWhere(match);
-            }
-        }
-
-        public IEnumerator<EventBusObserver<T>> GetEnumerator()
-        {
-            lock (_observers)
-            {
-                using (var list = ListPool<EventBusObserver<T>>.Obtain())
-                {
-                    list.Collection.AddRange(_observers);
-                    foreach (var observer in list.Collection)
-                    {
-                        yield return observer;
-                    }
-                }
-            }
+            _observers.RemoveWhere(observer => observer.CallbackEquals(callback));
         }
 
         /// <inheritdoc />
         public void RemoveTarget(object target)
         {
-            RemoveWhere(o => o.HasTarget(target));
+            _observers.RemoveWhere(o => o.HasTarget(target));
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        /// <inheritdoc />
+        public void Publish(object data)
         {
-            return GetEnumerator();
+            var typedData = data as T;
+            Assert.IsNotNull(typedData, $"data is not of type {typeof(T)}");
+            Publish(typedData);
+        }
+
+        private void Publish(T evtData)
+        {
+            foreach (var observer in _observers)
+            {
+                observer.Publish(evtData);
+            }
+
+            _observers.RemoveWhere(o => o.Once);
         }
 
         #endregion

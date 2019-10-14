@@ -2,15 +2,36 @@
 
 namespace BeardPhantom.UCL
 {
-    internal class EventBusObserver<T>
+    public delegate void EventPosted<in T>(T evtData);
+
+    public delegate void EventPostedNoData<in T>();
+
+    internal abstract class EventBusObserverBase<T>
     {
         #region Fields
 
-        public readonly bool Once;
+        public bool Once;
+
+        protected Predicate<T> Predicate;
+
+        #endregion
+
+        #region Methods
+
+        public abstract void Publish(T evtData);
+
+        public abstract bool HasTarget(object target);
+
+        public abstract bool CallbackEquals(Delegate callback);
+
+        #endregion
+    }
+
+    internal class EventBusObserver<T> : EventBusObserverBase<T>
+    {
+        #region Fields
 
         private readonly EventPosted<T> _callback;
-
-        private readonly Predicate<T> _predicate;
 
         #endregion
 
@@ -19,7 +40,7 @@ namespace BeardPhantom.UCL
         public EventBusObserver(EventPosted<T> callback, Predicate<T> predicate, bool once)
         {
             _callback = callback;
-            _predicate = predicate;
+            Predicate = predicate;
             Once = once;
         }
 
@@ -27,20 +48,64 @@ namespace BeardPhantom.UCL
 
         #region Methods
 
-        public void Publish(T evtData)
+        public override void Publish(T evtData)
         {
-            if (_predicate == null || _predicate(evtData))
+            if (Predicate == null || Predicate(evtData))
             {
                 _callback(evtData);
             }
         }
 
-        public bool CallbackEquals(EventPosted<T> callback)
+        /// <inheritdoc />
+        public override bool HasTarget(object target)
+        {
+            return _callback.Target == target;
+        }
+
+        public override bool CallbackEquals(Delegate callback)
         {
             return callback.Equals(_callback);
         }
 
-        public bool HasTarget(object target)
+        #endregion
+    }
+
+    internal class EventBusObserverNoData<T> : EventBusObserverBase<T>
+    {
+        #region Fields
+
+        private readonly EventPostedNoData<T> _callback;
+
+        #endregion
+
+        #region Constructors
+
+        public EventBusObserverNoData(EventPostedNoData<T> callback, Predicate<T> predicate, bool once)
+        {
+            _callback = callback;
+            Predicate = predicate;
+            Once = once;
+        }
+
+        #endregion
+
+        #region Methods
+
+        public override bool CallbackEquals(Delegate callback)
+        {
+            return callback.Equals(_callback);
+        }
+
+        /// <inheritdoc />
+        public override void Publish(T evtData)
+        {
+            if (Predicate == null || Predicate(evtData))
+            {
+                _callback();
+            }
+        }
+
+        public override bool HasTarget(object target)
         {
             return _callback.Target == target;
         }
