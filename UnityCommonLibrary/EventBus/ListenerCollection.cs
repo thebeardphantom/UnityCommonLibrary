@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine.Assertions;
 
 namespace BeardPhantom.UCL
@@ -18,8 +19,8 @@ namespace BeardPhantom.UCL
     {
         #region Fields
 
-        private readonly HashSet<EventBusObserverBase<T>> _observers =
-            new HashSet<EventBusObserverBase<T>>();
+        private readonly List<EventBusObserverBase<T>> _observers =
+            new List<EventBusObserverBase<T>>();
 
         #endregion
 
@@ -33,15 +34,15 @@ namespace BeardPhantom.UCL
             }
         }
 
-        public void Remove(EventPosted<T> callback)
+        public void Remove(Delegate callback)
         {
-            _observers.RemoveWhere(observer => observer.CallbackEquals(callback));
+            RemoveWhere(observer => observer.CallbackEquals(callback));
         }
 
         /// <inheritdoc />
         public void RemoveTarget(object target)
         {
-            _observers.RemoveWhere(o => o.HasTarget(target));
+            RemoveWhere(o => o.HasTarget(target));
         }
 
         /// <inheritdoc />
@@ -52,14 +53,29 @@ namespace BeardPhantom.UCL
             Publish(typedData);
         }
 
+        private void RemoveWhere(Predicate<EventBusObserverBase<T>> predicate)
+        {
+            for (var i = _observers.Count - 1; i >= 0; i--)
+            {
+                var observer = _observers[i];
+                if (predicate(observer))
+                {
+                    _observers.RemoveAt(i);
+                }
+            }
+        }
+
         private void Publish(T evtData)
         {
-            foreach (var observer in _observers)
+            for (var i = _observers.Count - 1; i >= 0; i--)
             {
+                var observer = _observers[i];
                 observer.Publish(evtData);
+                if (observer.Once)
+                {
+                    _observers.RemoveAt(i);
+                }
             }
-
-            _observers.RemoveWhere(o => o.Once);
         }
 
         #endregion
