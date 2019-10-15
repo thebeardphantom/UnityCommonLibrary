@@ -2,25 +2,30 @@
 
 namespace BeardPhantom.UCL
 {
-    public abstract class EventBusEventData { }
+    public abstract class EventBusEvent { }
 
-    public abstract class GatedEventBusEventData : EventBusEventData
+    public abstract class GatedEventBusEvent : EventBusEvent
     {
         #region Fields
 
-        private readonly List<IPendingEventBarrier> _barriers = new List<IPendingEventBarrier>();
+        private readonly List<IGatedEventBarrier> _barriers = new List<IGatedEventBarrier>();
 
         #endregion
 
         #region Methods
 
-        public void AddBarrier(IPendingEventBarrier barrier)
+        public void AddBarrier(IGatedEventBarrier barrier)
         {
             _barriers.Add(barrier);
         }
 
         internal bool CheckReady()
         {
+            if (_barriers.Count == 0)
+            {
+                return false;
+            }
+
             for (var i = 0; i < _barriers.Count; i++)
             {
                 if (!_barriers[i].Complete)

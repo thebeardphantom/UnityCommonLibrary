@@ -10,22 +10,22 @@ namespace BeardPhantom.UCL
         private readonly Dictionary<Type, IListenerCollection> _listenerCollections
             = new Dictionary<Type, IListenerCollection>();
 
-        private readonly Queue<EventBusEventData> _readyEvents
-            = new Queue<EventBusEventData>();
+        private readonly Queue<EventBusEvent> _readyEvents
+            = new Queue<EventBusEvent>();
 
-        private readonly List<GatedEventBusEventData> _pendingGatedEvents
-            = new List<GatedEventBusEventData>();
+        private readonly List<GatedEventBusEvent> _pendingGatedEvents
+            = new List<GatedEventBusEvent>();
 
         #endregion
 
         #region Methods
 
-        public void PostEvent<T>() where T : EventBusEventData, new()
+        public void PostEvent<T>() where T : EventBusEvent, new()
         {
             PostEvent(new T());
         }
 
-        public void PostEvent<T>(T evtData) where T : EventBusEventData
+        public void PostEvent<T>(T evtData) where T : EventBusEvent
         {
             if (evtData == null)
             {
@@ -33,7 +33,7 @@ namespace BeardPhantom.UCL
                 return;
             }
 
-            if (evtData is GatedEventBusEventData gatedEvent)
+            if (evtData is GatedEventBusEvent gatedEvent)
             {
                 _pendingGatedEvents.Add(gatedEvent);
             }
@@ -43,11 +43,37 @@ namespace BeardPhantom.UCL
             }
         }
 
+        public void PostEventNow<T>() where T : EventBusEvent, new()
+        {
+            PostEventNow(new T());
+        }
+
+        public void PostEventNow<T>(T evt) where T : EventBusEvent
+        {
+            switch (evt)
+            {
+                case null:
+                {
+                    UCLCore.Logger.LogError("", "Null event posted");
+                    return;
+                }
+                case GatedEventBusEvent _:
+                {
+                    throw new ArgumentException("Gated events cannot use PostEventNow");
+                }
+                default:
+                {
+                    PostEventNowInternal(evt);
+                    break;
+                }
+            }
+        }
+
         public void RegisterObserver<T>(
             EventPosted<T> callback,
             Predicate<T> predicate = null,
             bool once = false)
-            where T : EventBusEventData
+            where T : EventBusEvent
         {
             var collection = GetCollection<T>();
             if (collection == null)
@@ -59,7 +85,7 @@ namespace BeardPhantom.UCL
             collection.Add(new EventBusObserver<T>(callback, predicate, once));
         }
 
-        public void RemoveObserver<T>(EventPosted<T> observer) where T : EventBusEventData
+        public void RemoveObserver<T>(EventPosted<T> observer) where T : EventBusEvent
         {
             var collection = GetCollection<T>();
             collection.Remove(observer);
@@ -78,10 +104,7 @@ namespace BeardPhantom.UCL
             while (_readyEvents.Count > 0)
             {
                 var evt = _readyEvents.Dequeue();
-                if (_listenerCollections.TryGetValue(evt.GetType(), out var collection))
-                {
-                    collection.Publish(evt);
-                }
+                PostEventNowInternal(evt);
             }
 
             for (var i = _pendingGatedEvents.Count - 1; i >= 0; i--)
@@ -94,7 +117,15 @@ namespace BeardPhantom.UCL
             }
         }
 
-        private ListenerCollection<T> GetCollection<T>() where T : EventBusEventData
+        private void PostEventNowInternal(EventBusEvent evt)
+        {
+            if (_listenerCollections.TryGetValue(evt.GetType(), out var collection))
+            {
+                collection.Publish(evt);
+            }
+        }
+
+        private ListenerCollection<T> GetCollection<T>() where T : EventBusEvent
         {
             if (_listenerCollections.TryGetValue(typeof(T), out var genericCollection))
             {

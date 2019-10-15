@@ -15,12 +15,12 @@ namespace BeardPhantom.UCL
         #endregion
     }
 
-    internal class ListenerCollection<T> : IListenerCollection where T : EventBusEventData
+    internal class ListenerCollection<T> : IListenerCollection where T : EventBusEvent
     {
         #region Fields
 
-        private readonly List<EventBusObserverBase<T>> _observers =
-            new List<EventBusObserverBase<T>>();
+        private readonly List<EventBusObserver<T>> _observers =
+            new List<EventBusObserver<T>>();
 
         #endregion
 
@@ -53,7 +53,7 @@ namespace BeardPhantom.UCL
             Publish(typedData);
         }
 
-        private void RemoveWhere(Predicate<EventBusObserverBase<T>> predicate)
+        private void RemoveWhere(Predicate<EventBusObserver<T>> predicate)
         {
             for (var i = _observers.Count - 1; i >= 0; i--)
             {

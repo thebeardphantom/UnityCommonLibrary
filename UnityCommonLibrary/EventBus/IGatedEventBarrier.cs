@@ -1,6 +1,6 @@
 ﻿namespace BeardPhantom.UCL
 {
-    public interface IPendingEventBarrier
+    public interface IGatedEventBarrier
     {
         #region Properties
 
