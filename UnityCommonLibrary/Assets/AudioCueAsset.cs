@@ -1,5 +1,6 @@
-﻿using System;
-using BeardPhantom.UCL.Attributes;
+﻿using BeardPhantom.UCL.Attributes;
+using BeardPhantom.UCL.Utility;
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Random = UnityEngine.Random;
@@ -15,13 +16,23 @@ namespace BeardPhantom.UCL.Assets
         #region Types
 
         [Serializable]
-        public class AudioData
+        public class AudioData : IWeightedChoice
         {
             #region Fields
 
             public AudioClip Clip;
 
             public float VolumeOffset;
+
+            [SerializeField]
+            private int _weight = 1;
+
+            #endregion
+
+            #region Properties
+
+            /// <inheritdoc />
+            public int Weight => _weight;
 
             #endregion
         }
@@ -53,12 +64,16 @@ namespace BeardPhantom.UCL.Assets
         {
             Assert.IsTrue(Audio.Length > 0, $"No assigned audio for {name}");
             _settings.ApplyTo(source);
-            var selectedIndex = Random.Range(0, Audio.Length);
-            var clip = Audio[selectedIndex];
-            Assert.IsNotNull(clip.Clip, $"Audio entry {selectedIndex} for {name} has no assigned clip");
-            source.volume += clip.VolumeOffset;
+            var index = Audio.ChooseIndexFromWeighted();
+            Assert.IsFalse(index < 0, "index < 0");
+
+            var audio = Audio[index];
+            Assert.IsNotNull(audio.Clip, $"Audio entry {index} for {name} has no assigned clip");
+
+            source.volume += audio.VolumeOffset;
             source.loop = loop;
-            source.clip = clip.Clip;
+            source.clip = audio.Clip;
+
             source.Play();
             return source.clip;
         }
