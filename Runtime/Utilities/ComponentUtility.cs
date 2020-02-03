@@ -1,7 +1,7 @@
-﻿using System;
+﻿using BeardPhantom.UCL.Pooling;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using BeardPhantom.UCL.Pooling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -51,33 +51,51 @@ namespace BeardPhantom.UCL.Utility
             return new GameObject(name).AddComponent(t);
         }
 
-        public static void FindAll<T>(List<T> list, bool includeInactive = true) where T : Component
-        {
-            using (var sceneRoots = ListPool<GameObject>.Obtain())
-            {
-                using (var appendList = ListPool<T>.Obtain())
-                {
-                    for (var i = 0; i < SceneManager.sceneCount; i++)
-                    {
-                        var scene = SceneManager.GetSceneAt(i);
-                        sceneRoots.Collection.Clear();
-                        scene.GetRootGameObjects(sceneRoots);
-                        foreach (var root in sceneRoots)
-                        {
-                            appendList.Collection.Clear();
-                            root.GetComponentsInChildren(includeInactive, appendList.Collection);
-                            list.AddRange(appendList);
-                        }
-                    }
-                }
-            }
-        }
-
         public static IList<T> FindAll<T>(bool includeInactive = true) where T : Component
         {
             var list = new List<T>();
             FindAll(list, includeInactive);
             return list;
+        }
+
+        public static void FindAll<T>(List<T> list, bool includeInactive = true) where T : Component
+        {
+            using var sceneRoots = ListPool<GameObject>.Obtain();
+            using var appendList = ListPool<T>.Obtain();
+            for (var i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                sceneRoots.Collection.Clear();
+                scene.GetRootGameObjects(sceneRoots);
+                foreach (var root in sceneRoots)
+                {
+                    appendList.Collection.Clear();
+                    root.GetComponentsInChildren(includeInactive, appendList.Collection);
+                    list.AddRange(appendList);
+                }
+            }
+        }
+
+        public static void SortWithHierarchy<T>(IList<T> cmps, IComparer<T> comparer) where T : Component
+        {
+            switch (cmps)
+            {
+                case T[] arr:
+                {
+                    Array.Sort(arr, comparer);
+                    break;
+                }
+                case List<T> list:
+                {
+                    list.Sort(comparer);
+                    break;
+                }
+            }
+
+            for (var i = 0; i < cmps.Count; i++)
+            {
+                cmps[i].transform.SetSiblingIndex(i);
+            }
         }
 
         public static void SetEnabledAll(
