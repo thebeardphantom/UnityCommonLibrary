@@ -60,18 +60,22 @@ namespace BeardPhantom.UCL.Utility
 
         public static void FindAll<T>(List<T> list, bool includeInactive = true) where T : Component
         {
-            using var sceneRoots = ListPool<GameObject>.Obtain();
-            using var appendList = ListPool<T>.Obtain();
-            for (var i = 0; i < SceneManager.sceneCount; i++)
+            using (var sceneRoots = ListPool<GameObject>.Obtain())
             {
-                var scene = SceneManager.GetSceneAt(i);
-                sceneRoots.Collection.Clear();
-                scene.GetRootGameObjects(sceneRoots);
-                foreach (var root in sceneRoots)
+                using (var appendList = ListPool<T>.Obtain())
                 {
-                    appendList.Collection.Clear();
-                    root.GetComponentsInChildren(includeInactive, appendList.Collection);
-                    list.AddRange(appendList);
+                    for (var i = 0; i < SceneManager.sceneCount; i++)
+                    {
+                        var scene = SceneManager.GetSceneAt(i);
+                        sceneRoots.Collection.Clear();
+                        scene.GetRootGameObjects(sceneRoots);
+                        foreach (var root in sceneRoots)
+                        {
+                            appendList.Collection.Clear();
+                            root.GetComponentsInChildren(includeInactive, appendList.Collection);
+                            list.AddRange(appendList);
+                        }
+                    }
                 }
             }
         }

@@ -11,6 +11,8 @@ namespace BeardPhantom.UCL.Pooling
 
         public readonly GameObject Prefab;
 
+        public readonly bool ManageActiveState;
+
         private readonly Stack<GameObject> _pool = new Stack<GameObject>();
 
         private readonly HashSet<GameObject> _instances = new HashSet<GameObject>();
@@ -27,11 +29,15 @@ namespace BeardPhantom.UCL.Pooling
 
         #region Constructors
 
-        public UnityObjectPool(GameObject prefab)
+        public UnityObjectPool(GameObject prefab, bool manageActiveState = false)
         {
             Prefab = prefab;
+            ManageActiveState = manageActiveState;
 #if !UNITY_EDITOR
-            prefab.SetActive(false);
+            if(ManageActiveState)
+            {
+                prefab.SetActive(false);
+            }
 #endif
         }
 
@@ -39,13 +45,14 @@ namespace BeardPhantom.UCL.Pooling
 
         #region Methods
 
-        private static IDisposable GetDeactivateScope(GameObject prefab)
+        public void ReturnAll()
         {
-#if UNITY_EDITOR
-            return new SetGameObjectActiveScope(prefab, false);
-#else
-            return null;
-#endif
+            foreach (var instance in _instances)
+            {
+                ReturnInstanceToPool(instance, false);
+            }
+
+            _instances.Clear();
         }
 
         public void EnsurePoolCount(int count, Transform parent = null)
@@ -107,15 +114,36 @@ namespace BeardPhantom.UCL.Pooling
 
             if (_instances.Contains(instance))
             {
-                instance.gameObject.SetActive(false);
-                _instances.Remove(instance);
-                _pool.Push(instance);
+                ReturnInstanceToPool(instance);
             }
             else
             {
                 Debug.LogError($"Returning {instance} to invalid pool");
                 Object.Destroy(instance);
             }
+        }
+
+        private void ReturnInstanceToPool(GameObject instance, bool removeFromInstancesSet = true)
+        {
+            if (ManageActiveState)
+            {
+                instance.gameObject.SetActive(false);
+            }
+
+            _pool.Push(instance);
+            if (removeFromInstancesSet)
+            {
+                _instances.Remove(instance);
+            }
+        }
+
+        private IDisposable GetDeactivateScope(GameObject prefab)
+        {
+#if UNITY_EDITOR
+            return ManageActiveState ? new SetGameObjectActiveScope(prefab, false) : default;
+#else
+            return null;
+#endif
         }
 
         private GameObject GetNew(
