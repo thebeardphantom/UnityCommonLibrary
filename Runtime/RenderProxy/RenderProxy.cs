@@ -76,13 +76,16 @@ namespace BeardPhantom.UCL
             Render(trs, layer, camera);
         }
 
-        public void Render(Matrix4x4 transformation, int layer = -1, Camera camera = null)
+        public void Render(Matrix4x4 transformation, 
+            int layer = -1, 
+            Camera camera = default, 
+            Material overrideMaterial = default)
         {
             layer = layer < 0 ? _defaultLayer : layer;
             for (var i = 0; i < _subObjects.Count; i++)
             {
                 var obj = _subObjects[i];
-                obj.Render(transformation, layer, camera);
+                obj.Render(transformation, layer, camera, overrideMaterial);
             }
         }
 

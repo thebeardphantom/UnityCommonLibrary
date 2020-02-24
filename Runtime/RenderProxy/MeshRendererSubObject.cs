@@ -60,12 +60,16 @@ namespace BeardPhantom.UCL
         #region Methods
 
         /// <inheritdoc />
-        public override void Render(Matrix4x4 transformation, int layer, Camera camera)
+        public override void Render(Matrix4x4 transformation, int layer, Camera camera, Material overrideMaterial)
         {
+            var hasOverrideMaterial = overrideMaterial != null;
             var finalTransformation = transformation * LocalToWorld;
             for (var i = 0; i < SubMeshCount; i++)
             {
-                Graphics.DrawMesh(Mesh, finalTransformation, Materials[i], layer, camera, i);
+                var material = hasOverrideMaterial
+                    ? overrideMaterial
+                    : Materials[i];
+                Graphics.DrawMesh(Mesh, finalTransformation, material, layer, camera, i);
             }
         }
 

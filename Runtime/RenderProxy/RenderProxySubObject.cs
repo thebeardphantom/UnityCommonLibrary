@@ -13,7 +13,7 @@ namespace BeardPhantom.UCL
 
         #region Methods
 
-        public abstract void Render(Matrix4x4 transformation, int layer, Camera camera);
+        public abstract void Render(Matrix4x4 transformation, int layer, Camera camera, Material overrideMaterial);
 
         /// <inheritdoc />
         public abstract void Dispose();
