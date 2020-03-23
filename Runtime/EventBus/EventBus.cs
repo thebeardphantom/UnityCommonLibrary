@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace BeardPhantom.UCL
 {
+    [Obsolete]
     public class EventBus
     {
         #region Fields

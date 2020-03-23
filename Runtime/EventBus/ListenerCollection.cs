@@ -4,6 +4,7 @@ using UnityEngine.Assertions;
 
 namespace BeardPhantom.UCL
 {
+    [Obsolete]
     internal interface IListenerCollection
     {
         #region Methods
@@ -15,6 +16,7 @@ namespace BeardPhantom.UCL
         #endregion
     }
 
+    [Obsolete]
     internal class ListenerCollection<T> : IListenerCollection where T : EventBusEvent
     {
         #region Fields

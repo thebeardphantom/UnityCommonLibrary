@@ -2,7 +2,7 @@
 
 namespace BeardPhantom.UCL.Signals
 {
-    public delegate void SignalCallback<in T>(T data);
+    public delegate void SignalCallback<in T>(T evt);
 
     public class Signal<T>
     {
@@ -74,53 +74,44 @@ namespace BeardPhantom.UCL.Signals
             _subscribers.RemoveAll(s => Equals(s?.Target, target));
         }
 
-        public void Publish(T data)
+        public void Publish(T evt)
         {
-            if (!StartPublish())
-            {
-                return;
-            }
-
-            foreach (var s in _subscribers)
-            {
-                s.Invoke(data);
-            }
-
-            foreach (var s in _onceSubscribers)
-            {
-                s.Invoke(data);
-            }
-
-            StopPublish();
-        }
-
-        private bool StartPublish()
-        {
+            // Begin publish
             if (Enabled)
             {
                 _isPublishing = true;
                 _subscribers.RemoveAll(ShouldRemoveCallback);
                 _onceSubscribers.RemoveAll(ShouldRemoveCallback);
             }
+            else
+            {
+                return;
+            }
 
-            return Enabled;
-        }
+            foreach (var s in _subscribers)
+            {
+                s.Invoke(evt);
+            }
 
-        private void StopPublish()
-        {
+            foreach (var s in _onceSubscribers)
+            {
+                s.Invoke(evt);
+            }
+
+            // End publish
             _isPublishing = false;
             _onceSubscribers.Clear();
 
-            foreach (var s in _subscribersStaging)
+            foreach (var s1 in _subscribersStaging)
             {
-                Subscribe(s);
+                Subscribe(s1);
             }
 
             _subscribersStaging.Clear();
 
-            foreach (var s in _onceSubscribersStaging)
+            foreach (var s2 in _onceSubscribersStaging)
             {
-                SubscribeOnce(s);
+                SubscribeOnce(s2);
             }
 
             _onceSubscribersStaging.Clear();
