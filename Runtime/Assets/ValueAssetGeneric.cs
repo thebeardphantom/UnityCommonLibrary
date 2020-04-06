@@ -6,7 +6,6 @@ namespace BeardPhantom.UCL.Assets
     /// <summary>
     /// A value asset that represents a single value.
     /// </summary>
-    [CustomAssetCreateMenu]
     public abstract class ValueAsset<T> : ValueAsset
     {
         [SerializeField]

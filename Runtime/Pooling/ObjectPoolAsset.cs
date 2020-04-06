@@ -1,9 +1,7 @@
-﻿using BeardPhantom.UCL.Attributes;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeardPhantom.UCL.Pooling
 {
-    [CustomAssetCreateMenu]
     public class ObjectPoolAsset : ScriptableObject
     {
         #region Fields

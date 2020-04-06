@@ -21,9 +21,7 @@ namespace BeardPhantom.UCL.Utility
             group.blocksRaycasts = active;
         }
 
-        public static void SetPivot(
-            this RectTransform rectTransform,
-            Vector2 pivot)
+        public static void SetPivot(this RectTransform rectTransform, Vector2 pivot)
         {
             var center = rectTransform.GetWorldCenter();
             rectTransform.pivot = pivot;
@@ -31,11 +29,23 @@ namespace BeardPhantom.UCL.Utility
             rectTransform.position += offset;
         }
 
-        public static void SetAnchors(
-            this RectTransform rectTransform,
-            Vector2 anchor)
+        public static void SetAnchors(this RectTransform rectTransform, Vector2 anchor)
         {
-            rectTransform.anchorMin = rectTransform.anchorMax = anchor;
+            rectTransform.anchorMin = anchor;
+            rectTransform.anchorMax = anchor;
+        }
+
+        public static void SetAnchors(this RectTransform rectTransform, Vector2 min, Vector2 max)
+        {
+            rectTransform.anchorMin = min;
+            rectTransform.anchorMax = max;
+        }
+
+        public static void SetToFill(this RectTransform rectTransform, Vector2 anchor)
+        {
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.sizeDelta = Vector2.zero;
         }
 
         public static Vector2 GetWorldCenter(this RectTransform rectTransform)

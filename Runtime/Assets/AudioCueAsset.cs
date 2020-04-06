@@ -1,16 +1,13 @@
-﻿using BeardPhantom.UCL.Attributes;
-using BeardPhantom.UCL.Utility;
+﻿using BeardPhantom.UCL.Utility;
 using System;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Random = UnityEngine.Random;
 
 namespace BeardPhantom.UCL.Assets
 {
     /// <summary>
     /// Represents an audio event. A clip will be randomly selected on playback, using the specified AudioSourceSettings
     /// </summary>
-    [CustomAssetCreateMenu]
     public class AudioCueAsset : ScriptableObject
     {
         #region Types
