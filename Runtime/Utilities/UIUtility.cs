@@ -41,7 +41,7 @@ namespace BeardPhantom.UCL.Utility
             rectTransform.anchorMax = max;
         }
 
-        public static void SetToFill(this RectTransform rectTransform, Vector2 anchor)
+        public static void SetToFill(this RectTransform rectTransform)
         {
             rectTransform.anchorMin = Vector2.zero;
             rectTransform.anchorMax = Vector2.one;
