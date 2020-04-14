@@ -10,34 +10,22 @@ namespace BeardPhantom.UCL
     {
         #region Fields
 
-        [DisplayName("Offset")]
         public Vector2 FlexibleSizeOffset;
 
-        [DisplayName("Offset")]
         public Vector2 MinSizeOffset;
 
-        [DisplayName("Offset")]
         public Vector2 PreferredSizeOffset;
 
-        [DisplayName("Offset")]
         public Vector2 RectSizeOffset;
 
         public Graphic TargetGraphic;
 
-        [Header("Flexible Size")]
-        [DisplayName("Use")]
         public bool UseFlexibleSize;
 
-        [Header("Min Size")]
-        [DisplayName("Use")]
         public bool UseMinSize;
 
-        [Header("Preferred Size")]
-        [DisplayName("Use")]
         public bool UsePreferredSize;
 
-        [Header("Rect Size")]
-        [DisplayName("Use")]
         public bool UseRectSize;
 
         private LayoutElement _layout;
