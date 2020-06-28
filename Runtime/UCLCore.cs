@@ -1,16 +1,24 @@
-﻿using BeardPhantom.UCL.Signals;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeardPhantom.UCL
 {
+    public delegate TResult ValueEventArgs<in TArgs, out TResult>(TArgs args) where TArgs : struct;
+
+    public delegate void ValueEventHandler<in TArgs>(TArgs args) where TArgs : struct;
+
     /// <summary>
     /// Centralizes logging for UCL.
     /// </summary>
     public static class UCLCore
     {
-        #region Fields
+        #region Events
 
-        public static readonly Signal<GameObject> ObjectCreated = new Signal<GameObject>();
+        public static event ValueEventArgs<InstantiatePrefabEventArgs, GameObject> ObjectCreated =
+            DefaultInstantiatePrefabEventHandler;
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// How to log from UCL classes
@@ -21,22 +29,41 @@ namespace BeardPhantom.UCL
 
         #region Methods
 
-        internal static GameObject Instantiate(
-            GameObject original,
-            Vector3 position,
-            Quaternion rotation,
-            Transform parent)
+        internal static GameObject Instantiate(InstantiatePrefabEventArgs args)
         {
-            var instance = Object.Instantiate(original, position, rotation, parent);
-            ObjectCreated.Publish(instance);
-            return instance;
+            return ObjectCreated.Invoke(args);
         }
 
-        internal static GameObject Instantiate(GameObject original, Transform parent)
+        private static GameObject DefaultInstantiatePrefabEventHandler(InstantiatePrefabEventArgs args)
         {
-            var instance = Object.Instantiate(original, parent);
-            ObjectCreated.Publish(instance);
-            return instance;
+            return Object.Instantiate(args.Prefab, args.Position, args.Rotation, args.Parent);
+        }
+
+        #endregion
+    }
+
+    public struct InstantiatePrefabEventArgs
+    {
+        #region Fields
+
+        public GameObject Prefab;
+
+        public Quaternion Rotation;
+
+        public Vector3 Position;
+
+        public Transform Parent;
+
+        #endregion
+
+        #region Constructors
+
+        public InstantiatePrefabEventArgs(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent)
+        {
+            Prefab = prefab;
+            Position = position;
+            Rotation = rotation;
+            Parent = parent;
         }
 
         #endregion

@@ -1,15 +1,42 @@
-﻿using BeardPhantom.UCL.Signals;
-
-namespace BeardPhantom.UCL
+﻿namespace BeardPhantom.UCL
 {
     /// <summary>
     /// A value that fires a signal when its value changes.
     /// </summary>
     public class ObservedValue<T>
     {
-        #region Fields
+        #region Types
 
-        public readonly Signal<ObservedValueChangeData<T>> ValueChanged = new Signal<ObservedValueChangeData<T>>();
+        public readonly struct ChangedEventArgs
+        {
+            #region Fields
+
+            public readonly T PreviousValue;
+
+            public readonly T Value;
+
+            #endregion
+
+            #region Constructors
+
+            public ChangedEventArgs(T previousValue, T value)
+            {
+                PreviousValue = previousValue;
+                Value = value;
+            }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Events
+
+        public event ValueEventHandler<ChangedEventArgs> ValueChanged;
+
+        #endregion
+
+        #region Fields
 
         private T _value;
 
@@ -29,7 +56,7 @@ namespace BeardPhantom.UCL
 
                 var previousValue = _value;
                 _value = value;
-                ValueChanged.Publish(new ObservedValueChangeData<T>(previousValue, _value));
+                ValueChanged?.Invoke(new ChangedEventArgs(previousValue, _value));
             }
         }
 
@@ -52,26 +79,6 @@ namespace BeardPhantom.UCL
         public static implicit operator T(ObservedValue<T> t)
         {
             return t.Value;
-        }
-
-        #endregion
-    }
-
-    public struct ObservedValueChangeData<T>
-    {
-        #region Fields
-
-        public readonly T PreviousValue;
-        public readonly T Value;
-
-        #endregion
-
-        #region Constructors
-
-        public ObservedValueChangeData(T previousValue, T value)
-        {
-            PreviousValue = previousValue;
-            Value = value;
         }
 
         #endregion

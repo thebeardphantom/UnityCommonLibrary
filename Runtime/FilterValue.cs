@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using BeardPhantom.UCL.Signals;
 
 namespace BeardPhantom.UCL
 {
@@ -9,9 +8,15 @@ namespace BeardPhantom.UCL
     /// </summary>
     public class FilterValue
     {
-        #region Fields
+        #region Types
 
-        public readonly Signal<FilterValue> ValueChanged = new Signal<FilterValue>();
+        public delegate void OnValueChanged(FilterValue src);
+
+        #endregion
+
+        #region Events
+
+        public event OnValueChanged ValueChanged;
 
         #endregion
 
@@ -96,7 +101,7 @@ namespace BeardPhantom.UCL
                 RawValue = value;
                 Value = RawValue.Trim();
                 Keywords = Regex.Split(Value, @"\s");
-                ValueChanged.Publish(this);
+                ValueChanged?.Invoke(this);
                 return true;
             }
 
