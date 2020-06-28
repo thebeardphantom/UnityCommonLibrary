@@ -151,7 +151,7 @@ namespace BeardPhantom.UCL.Pooling
             Vector3 position = default,
             Quaternion rotation = default)
         {
-            return UCLCore.Instantiate(Prefab, position, rotation, parent);
+            return UCLCore.Instantiate(new InstantiatePrefabEventArgs(Prefab, position, rotation, parent));
         }
 
         #endregion
