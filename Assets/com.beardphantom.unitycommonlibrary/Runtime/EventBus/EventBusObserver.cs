@@ -2,23 +2,25 @@
 
 namespace BeardPhantom.UCL
 {
-    public delegate void EventPosted<in T>(T evtData);
+    public delegate void OnEventPosted<in T>(T evtData);
 
     internal class EventBusObserver<T>
     {
         #region Fields
 
-        private readonly EventPosted<T> _callback;
+        private readonly OnEventPosted<T> _handler;
+
         public bool Once;
+
         protected Predicate<T> Predicate;
 
         #endregion
 
         #region Constructors
 
-        public EventBusObserver(EventPosted<T> callback, Predicate<T> predicate, bool once)
+        public EventBusObserver(OnEventPosted<T> handler, Predicate<T> predicate, bool once)
         {
-            _callback = callback;
+            _handler = handler;
             Predicate = predicate;
             Once = once;
         }
@@ -31,19 +33,18 @@ namespace BeardPhantom.UCL
         {
             if (Predicate == null || Predicate(evtData))
             {
-                _callback(evtData);
+                _handler(evtData);
             }
         }
 
-        /// <inheritdoc />
         public bool HasTarget(object target)
         {
-            return _callback.Target == target;
+            return _handler.Target == target;
         }
 
         public bool CallbackEquals(Delegate callback)
         {
-            return callback.Equals(_callback);
+            return callback.Equals(_handler);
         }
 
         #endregion

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace BeardPhantom.UCL
 {
-    [Obsolete]
     public class EventBus
     {
         #region Fields
@@ -11,19 +10,18 @@ namespace BeardPhantom.UCL
         private readonly Dictionary<Type, IListenerCollection> _listenerCollections
             = new Dictionary<Type, IListenerCollection>();
 
-        private readonly Queue<EventBusEvent> _readyEvents
-            = new Queue<EventBusEvent>();
+        private readonly Queue<object> _postedEvents = new Queue<object>();
 
         #endregion
 
         #region Methods
 
-        public void PostEvent<T>() where T : EventBusEvent, new()
+        public void PostEvent<T>() where T : new()
         {
             PostEvent(new T());
         }
 
-        public void PostEvent<T>(T evtData) where T : EventBusEvent
+        public void PostEvent<T>(T evtData)
         {
             if (evtData == null)
             {
@@ -31,14 +29,13 @@ namespace BeardPhantom.UCL
                 return;
             }
 
-            _readyEvents.Enqueue(evtData);
+            _postedEvents.Enqueue(evtData);
         }
 
-        public void RegisterObserver<T>(
-            EventPosted<T> callback,
+        public void AddObserver<T>(
+            OnEventPosted<T> handler,
             Predicate<T> predicate = null,
             bool once = false)
-            where T : EventBusEvent
         {
             var collection = GetCollection<T>();
             if (collection == null)
@@ -47,10 +44,10 @@ namespace BeardPhantom.UCL
                 _listenerCollections.Add(typeof(T), collection);
             }
 
-            collection.Add(new EventBusObserver<T>(callback, predicate, once));
+            collection.Add(new EventBusObserver<T>(handler, predicate, once));
         }
 
-        public void RemoveObserver<T>(EventPosted<T> observer) where T : EventBusEvent
+        public void RemoveObserver<T>(OnEventPosted<T> observer)
         {
             var collection = GetCollection<T>();
             collection.Remove(observer);
@@ -64,19 +61,22 @@ namespace BeardPhantom.UCL
             }
         }
 
-        public void PumpEvents()
+        public void PumpEvents(int maxEventsToProcess = -1)
         {
-            while (_readyEvents.Count > 0)
+            var processedEvents = 0;
+            while (_postedEvents.Count > 0 && processedEvents < maxEventsToProcess)
             {
-                var evt = _readyEvents.Dequeue();
+                var evt = _postedEvents.Dequeue();
                 if (_listenerCollections.TryGetValue(evt.GetType(), out var collection))
                 {
                     collection.Publish(evt);
                 }
+
+                processedEvents++;
             }
         }
 
-        private ListenerCollection<T> GetCollection<T>() where T : EventBusEvent
+        private ListenerCollection<T> GetCollection<T>()
         {
             if (_listenerCollections.TryGetValue(typeof(T), out var genericCollection))
             {

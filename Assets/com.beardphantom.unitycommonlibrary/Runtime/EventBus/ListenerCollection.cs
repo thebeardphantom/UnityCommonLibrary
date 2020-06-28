@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.Assertions;
 
 namespace BeardPhantom.UCL
 {
-    [Obsolete]
     internal interface IListenerCollection
     {
         #region Methods
@@ -16,8 +14,7 @@ namespace BeardPhantom.UCL
         #endregion
     }
 
-    [Obsolete]
-    internal class ListenerCollection<T> : IListenerCollection where T : EventBusEvent
+    internal class ListenerCollection<T> : IListenerCollection
     {
         #region Fields
 
@@ -50,8 +47,7 @@ namespace BeardPhantom.UCL
         /// <inheritdoc />
         public void Publish(object data)
         {
-            var typedData = data as T;
-            Assert.IsNotNull(typedData, $"data is not of type {typeof(T)}");
+            var typedData = (T) data;
             Publish(typedData);
         }
 
