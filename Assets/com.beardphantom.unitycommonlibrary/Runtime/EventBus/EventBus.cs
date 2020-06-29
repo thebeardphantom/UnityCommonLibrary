@@ -85,7 +85,7 @@ namespace BeardPhantom.UCL
         {
             var processedEvents = 0;
             _processStopwatch.Restart();
-            while (ProcessLimit.CanContinue(processedEvents, _processStopwatch.Elapsed))
+            while (_postedEvents.Count > 0 && ProcessLimit.CanContinue(processedEvents, _processStopwatch.Elapsed))
             {
                 var evt = _postedEvents.Dequeue();
                 if (_listenerCollections.TryGetValue(evt.GetType(), out var collection))
