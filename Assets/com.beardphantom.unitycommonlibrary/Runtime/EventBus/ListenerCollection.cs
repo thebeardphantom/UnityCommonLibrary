@@ -9,7 +9,7 @@ namespace BeardPhantom.UCL
 
         void RemoveTarget(object target);
 
-        void Publish(object data);
+        void NotifyListeners(object data);
 
         #endregion
     }
@@ -45,10 +45,10 @@ namespace BeardPhantom.UCL
         }
 
         /// <inheritdoc />
-        public void Publish(object data)
+        public void NotifyListeners(object data)
         {
             var typedData = (T) data;
-            Publish(typedData);
+            NotifyListeners(typedData);
         }
 
         private void RemoveWhere(Predicate<EventBusObserver<T>> predicate)
@@ -63,7 +63,7 @@ namespace BeardPhantom.UCL
             }
         }
 
-        private void Publish(T evtData)
+        private void NotifyListeners(T evtData)
         {
             for (var i = _observers.Count - 1; i >= 0; i--)
             {

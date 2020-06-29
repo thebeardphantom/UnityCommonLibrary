@@ -1,16 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace BeardPhantom.UCL
 {
     public class EventBus
     {
+        #region Types
+
+        public delegate void OnEvent(object data);
+
+        #endregion
+
+        #region Events
+
+        public event OnEvent AnyEventPosted;
+
+        public event OnEvent AnyEventProcessed;
+
+        #endregion
+
         #region Fields
 
         private readonly Dictionary<Type, IListenerCollection> _listenerCollections
             = new Dictionary<Type, IListenerCollection>();
 
         private readonly Queue<object> _postedEvents = new Queue<object>();
+
+        public EventBusProcessLimit ProcessLimit = new UnlimitedProcessLimit();
+        private Stopwatch _processStopwatch;
 
         #endregion
 
@@ -30,6 +48,7 @@ namespace BeardPhantom.UCL
             }
 
             _postedEvents.Enqueue(evtData);
+            AnyEventPosted?.Invoke(evtData);
         }
 
         public void AddObserver<T>(
@@ -61,15 +80,17 @@ namespace BeardPhantom.UCL
             }
         }
 
-        public void PumpEvents(int maxEventsToProcess = -1)
+        public void ProcessPostedEvents()
         {
             var processedEvents = 0;
-            while (_postedEvents.Count > 0 && processedEvents < maxEventsToProcess)
+            _processStopwatch.Restart();
+            while (ProcessLimit.CanContinue(processedEvents, _processStopwatch.Elapsed))
             {
                 var evt = _postedEvents.Dequeue();
                 if (_listenerCollections.TryGetValue(evt.GetType(), out var collection))
                 {
-                    collection.Publish(evt);
+                    collection.NotifyListeners(evt);
+                    AnyEventProcessed?.Invoke(evt);
                 }
 
                 processedEvents++;
