@@ -8,7 +8,7 @@ namespace BeardPhantom.UCL
     {
         #region Types
 
-        public delegate void OnEvent(object data);
+        public delegate void OnEvent(object evt);
 
         #endregion
 
@@ -27,8 +27,9 @@ namespace BeardPhantom.UCL
 
         private readonly Queue<object> _postedEvents = new Queue<object>();
 
+        private readonly Stopwatch _processStopwatch = new Stopwatch();
+
         public EventBusProcessLimit ProcessLimit = new UnlimitedProcessLimit();
-        private Stopwatch _processStopwatch;
 
         #endregion
 
